@@ -25,6 +25,18 @@ public:
 	int curProcessTime;
 
 public:
+	Process(){
+		processID = "";
+		initialArrivalTime = -1;
+		totalCpuBurstTime = -1;
+		totalNumBursts = -1;
+		ioTime = -1;
+
+		curNumBursts = -1;
+		curIOTime = -1;
+		curProcessTime = -1;
+	}
+
 	Process(std::string _processID, int _initialArrivalTime, int _totalCpuBurstTime, int _totalNumBursts, int _ioTime){
 		processID = _processID;
 		initialArrivalTime = _initialArrivalTime;
@@ -146,11 +158,34 @@ int main(int argc, char* argv[]){
 
 	std::vector<Process> fcfsAdding(processes);
 
+	std::queue<Process> fcfsProcessQueue;
+/*
+	Process currRunningProcess;
+	bool currRunningProcessUsed = false;
+
+	int time = 0;
+
+	//instead of iterating through each ms, have a list of events that we just go to the first one?
+
+	while(!fcfsAdding.empty() || !fcfsProcessQueue.empty()){
+		
+		//run the process
+		if(currRunningProcessUsed){
+			currRunningProcess.run(1);
+		}
+
+
+
+		time++;
+	}
+
+	/*
 	//sort the vector by process ID?
 	std::queue<Process> fcfsQueue;
 	std::queue<Process> fcfsIOQueue;
 
 	//This is not a smart way to do things
+
 	std::vector<Process>::iterator addingItr;
 	int time = 0;
 	while(!fcfsAdding.empty() || !fcfsQueue.empty() || !fcfsIOQueue.empty()){
@@ -196,7 +231,10 @@ int main(int argc, char* argv[]){
 
 		time++;
 	}
+	*/
 	/*
+
+	//this is an even worse way to do things
 	std::priority_queue<Process, std::vector<Process>, FirstComeLessThan> fcfsPriorityQueue;
 
 	//for(int i = 0; i < processes)
