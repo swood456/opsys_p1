@@ -192,15 +192,29 @@ int main(int argc, char* argv[]){
 	
 	//sort the vector by process ID?
 	std::queue<Process> fcfsQueue;
-	std::queue<Process> fcfsIOQueue;
+	std::vector<Process> fcfsIOList;
+	std::vector<Process>::iterator IOitr;
 
 	//This is not a smart way to do things
 
 	std::vector<Process>::iterator addingItr;
 	int time = 0;
-	while(!fcfsAdding.empty() || !fcfsQueue.empty() || !fcfsIOQueue.empty()){
+	while(!fcfsAdding.empty() || !fcfsQueue.empty() || !fcfsIOList.empty()){
 		//std::cout <<"hello\n";
-		if(!fcfsIOQueue.empty()){
+
+		IOitr = fcfsIOList.begin();
+		while(IOitr != fcfsIOList.end()){
+			//update IO for this process
+			if(IOitr->runIO(1) == 1){
+				//add the process back into the queue
+				fcfsQueue.push(*IOitr);
+
+				//remove the process from the IO list
+				fcfsIOList.erase(IOitr);
+
+			}
+		}
+		/*if(!fcfsIOQueue.empty()){
 			if(fcfsIOQueue.front().runIO(1) == 1){
 				std::cout << "finished IO on process with ID " << fcfsIOQueue.front().processID << " and pop'd it at time: " << time << std::endl;
 				if(fcfsIOQueue.front().curNumBursts > 0){
@@ -208,15 +222,22 @@ int main(int argc, char* argv[]){
 				}
 				fcfsIOQueue.pop();
 			}
-		}
+		}*/
+
 
 
 		//run the first thing is the processing queue
 		if(!fcfsQueue.empty()){
 			if(fcfsQueue.front().run(1) == 1){
-				std::cout << "finished running process with ID " << fcfsQueue.front().processID << " and pop'd it at time: " << time << std::endl;
-				fcfsIOQueue.push(fcfsQueue.front());
+				//process finished running
 
+				if(fcfsQueue.front().curNumBursts <= 0){
+					//the process is done, stop running things
+					std::cout << "finished process with ID " << fcfsQueue.front().processID << std::endl;
+				}else{
+					std::cout << "finished running process with ID " << fcfsQueue.front().processID << " and pop'd it at time: " << time << "it has " << fcfsQueue.front().curNumBursts << "remaining" << std::endl;
+					fcfsIOList.push_back(fcfsQueue.front());
+				}
 				fcfsQueue.pop();
 			}
 		}
@@ -240,6 +261,9 @@ int main(int argc, char* argv[]){
 		
 
 		time++;
+
+		if(time > 99999)
+			return EXIT_FAILURE;
 	}
 	
 	/*
