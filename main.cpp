@@ -156,9 +156,19 @@ int main(int argc, char* argv[]){
 	//First-Come-First-Serve//
 	//////////////////////////
 
+	/*
+	1. see if things arrived at this ms
+		if yes add them the process queue at back
+	2. check to see if any processes have completed their I/O work
+		if yes readd them to the proces queue keeping track of states
+	3. check if current active process is finished
+		see if it the last burst, if not swap to IO
+		then do a context switch
+
+	*/
 	std::vector<Process> fcfsAdding(processes);
 
-	std::queue<Process> fcfsProcessQueue;
+	//std::queue<Process> fcfsProcessQueue;
 /*
 	Process currRunningProcess;
 	bool currRunningProcessUsed = false;
@@ -177,9 +187,9 @@ int main(int argc, char* argv[]){
 
 
 		time++;
-	}
+	}*/
 
-	/*
+	
 	//sort the vector by process ID?
 	std::queue<Process> fcfsQueue;
 	std::queue<Process> fcfsIOQueue;
@@ -231,7 +241,7 @@ int main(int argc, char* argv[]){
 
 		time++;
 	}
-	*/
+	
 	/*
 
 	//this is an even worse way to do things
