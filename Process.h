@@ -13,14 +13,15 @@
 class Process {
 // TODO Make these private
 public:
-	std::string processID;
-	int initialArrivalTime;
-	int totalCpuBurstTime;
-	int totalNumBursts;
-	int ioTime;
-	int curNumBursts;
-	int curIOTime;
-	int curProcessTime;
+	std::string processID;		// the name of the process
+	int initialArrivalTime;		// when the process first arrives
+	int totalCpuBurstTime;		// initial cpu burst time
+	int totalNumBursts;			// initial number of cpu bursts
+	int ioTime;					// initial io time
+	int curNumBursts;			// current number of cpu bursts remaining
+	int curIOTime;				// current IO time remaining
+	int curProcessTime;			// current CPU time remaining
+	bool running;				// false if process is not running, true if it is
 
 public:
 	Process();
