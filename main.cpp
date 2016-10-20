@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <queue>
+#include <iomanip>
 #include "Process.h"
 
 const int m = 1;		//number of processors available
@@ -116,6 +117,8 @@ int main(int argc, char* argv[]){
 	//open the ouput file
 	std::ofstream outputFile;
 	outputFile.open(argv[2]);
+
+	outputFile << std::fixed << std::setprecision(2);
 
 	fcfs(processes, numBursts, avgBurstTime, outputFile);
 
