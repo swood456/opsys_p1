@@ -606,6 +606,6 @@ void roundRobin(std::vector<Process> rrAdding, int numBursts, double avgBurstTim
 		" ms\n-- total number of context switches: "<<numContextSwitches<<"\n-- total number of preemptions: " <<
 		numPreemptions;
 
-	std::cout<<"time "<<time+ t_cs/2 - 1<<"ms: Simulator ended for RR"<<std::endl<<std::endl;
+	std::cout<<"time "<<time+ t_cs/2 - 1<<"ms: Simulator ended for RR"<<std::endl;
 
 }
