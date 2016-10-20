@@ -28,9 +28,17 @@ std::string printQueue(std::queue<Process *> q) {
 	return output + "]";
 }
 
-std::string printQueue(std::priority_queue<Process *> q){
-	return "same";
+std::string printQueue(std::priority_queue<Process *, std::vector<Process *>, ShortestJobFirstLessThan> q){
+	if(q.empty()) {
+		return "[Q empty]";
+	}
+	std::string output = "[Q";
+	while (!q.empty()) {
+		output += " " + q.top()->processID;
+		q.pop();
+	}
 
+	return output + "]";
 }
 
 int main(int argc, char* argv[]){
@@ -307,7 +315,7 @@ void sjf(std::vector<Process> sjfAdding, int numBursts, double avgBurstTime, std
 
 	std::queue<Process *> fcfsQueue;
 	//std::priority_queue<Process *, std::vector<Process *>, LessThanByBurstLength> sjfQueue;
-	std::priority_queue<Process, std::vector<Process>, LessThanByBurstLength> sjfQueue;
+	std::priority_queue<Process*, std::vector<Process*>, ShortestJobFirstLessThan> sjfQueue;
 	std::vector<Process *> sjfIOList;
 	std::vector<Process *>::iterator IOitr;
 	std::vector<Process *> IOtmp;
@@ -323,15 +331,15 @@ void sjf(std::vector<Process> sjfAdding, int numBursts, double avgBurstTime, std
 					// or remove it completely
 					if (cpu[i]->curNumBursts <= 0) {
 						std::cout<<"time "<<time<<"ms: Process "<<cpu[i]->processID<<" terminated "
-							<<printQueue(fcfsQueue)<<std::endl;
+							<<printQueue(sjfQueue)<<std::endl;
 
 						numProcesses--;
 					} else {
 						std::cout<<"time "<<time<<"ms: Process "<<cpu[i]->processID<<" completed a CPU burst; "
-							<<cpu[i]->curNumBursts<<" to go "<<printQueue(fcfsQueue)<<std::endl;
+							<<cpu[i]->curNumBursts<<" to go "<<printQueue(sjfQueue)<<std::endl;
 
 						std::cout<<"time "<<time<<"ms: Process "<<cpu[i]->processID<<" blocked on I/O until time "
-							<<time+cpu[i]->ioTime<<"ms "<<printQueue(fcfsQueue)<<std::endl;
+							<<time+cpu[i]->ioTime<<"ms "<<printQueue(sjfQueue)<<std::endl;
 
 						IOtmp.push_back(cpu[i]);
 					}
@@ -346,7 +354,7 @@ void sjf(std::vector<Process> sjfAdding, int numBursts, double avgBurstTime, std
 
 				if(cpuCS[i] == 0 && cpu[i] != NULL){
 					std::cout<<"time "<<time<<"ms: Process "<<cpu[i]->processID<<" started using the CPU "
-						<<printQueue(fcfsQueue)<<std::endl;
+						<<printQueue(sjfQueue)<<std::endl;
 				}
 			}
 		}
@@ -358,10 +366,10 @@ void sjf(std::vector<Process> sjfAdding, int numBursts, double avgBurstTime, std
 				(*IOitr)->burstArrivalTime = time;
 
 				//add the process back into the queue
-				fcfsQueue.push(*IOitr);
+				sjfQueue.push(*IOitr);
 
 				std::cout<<"time "<<time<<"ms: Process "<< (*IOitr)->processID
-					<<" completed I/O "<<printQueue(fcfsQueue)<<std::endl;
+					<<" completed I/O "<<printQueue(sjfQueue)<<std::endl;
 
 				//remove the process from the IO list
 				sjfIOList.erase(IOitr);
@@ -380,10 +388,10 @@ void sjf(std::vector<Process> sjfAdding, int numBursts, double avgBurstTime, std
 		while(addingItr != sjfAdding.end()){
 
 			if(addingItr->initialArrivalTime == time){
-				fcfsQueue.push(&(*addingItr));
+				sjfQueue.push(&(*addingItr));
 
 				std::cout<<"time "<<time<<"ms: Process "<<addingItr->processID
-					<<" arrived "<<printQueue(fcfsQueue)<<std::endl;
+					<<" arrived "<<printQueue(sjfQueue)<<std::endl;
 
 				//sjfAdding.erase(addingItr);
 				addingItr++;
@@ -395,13 +403,13 @@ void sjf(std::vector<Process> sjfAdding, int numBursts, double avgBurstTime, std
 
 		// add stuff to cpu
 		for (int i = 0; i < m; ++i) {
-			if (cpu[i] == NULL && !fcfsQueue.empty()) {
+			if (cpu[i] == NULL && !sjfQueue.empty()) {
 				numContextSwitches++;
-				avgWaitTime += time - fcfsQueue.front()->burstArrivalTime;
-				//avgTurnTime += time + fcfsQueue.front()->totalCpuBurstTime - fcfsQueue.front()->burstArrivalTime;
+				avgWaitTime += time - sjfQueue.top()->burstArrivalTime;
+				//avgTurnTime += time + sjfQueue.front()->totalCpuBurstTime - sjfQueue.front()->burstArrivalTime;
 
-				cpu[i] = fcfsQueue.front();
-				fcfsQueue.pop();
+				cpu[i] = sjfQueue.top();
+				sjfQueue.pop();
 
 				cpuCS[i] += t_cs/2;
 			}
@@ -436,9 +444,9 @@ void roundRobin(std::vector<Process> rrAdding, int numBursts, double avgBurstTim
 	int		numContextSwitches = 0;
 	int		numPreemptions = 0;
 
-	/////////////////////
-	//Shorest-Job-First//
-	/////////////////////
+	///////////////
+	//Round-Robin//
+	///////////////
 
 	/*
 	1. remove finished processes from the cpu
@@ -457,7 +465,7 @@ void roundRobin(std::vector<Process> rrAdding, int numBursts, double avgBurstTim
 
 	std::queue<Process *> fcfsQueue;
 	//std::priority_queue<Process *, std::vector<Process *>, LessThanByBurstLength> sjfQueue;
-	std::priority_queue<Process, std::vector<Process>, LessThanByBurstLength> sjfQueue;
+	//std::priority_queue<Process, std::vector<Process>, LessThanByBurstLength> sjfQueue;
 	std::vector<Process *> sjfIOList;
 	std::vector<Process *>::iterator IOitr;
 	std::vector<Process *> IOtmp;

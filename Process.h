@@ -31,12 +31,18 @@ public:
 	int runIO(int duration);
 };
 
-struct LessThanByBurstLength{
-	bool operator()(const Process& lhs, const Process& rhs) const{
-		if(lhs.totalCpuBurstTime == rhs.totalCpuBurstTime){
-			return lhs.processID > rhs.processID;
-		}
-		return lhs.totalCpuBurstTime > rhs.totalCpuBurstTime;
+// struct LessThanByBurstLength{
+// 	bool operator()(const Process& lhs, const Process& rhs) const{
+// 		if(lhs.totalCpuBurstTime == rhs.totalCpuBurstTime){
+// 			return lhs.processID > rhs.processID;
+// 		}
+// 		return lhs.totalCpuBurstTime > rhs.totalCpuBurstTime;
+// 	}
+// };
+
+struct ShortestJobFirstLessThan {
+	bool operator()(const Process* p1, const Process* p2) const {
+		return p1->totalCpuBurstTime > p2->totalCpuBurstTime || (p1->totalCpuBurstTime == p2->totalCpuBurstTime && p1->processID < p2->processID);
 	}
 };
 
