@@ -31,12 +31,12 @@ public:
 	int runIO(int duration);
 };
 
-struct FirstComeLessThan{
+struct LessThanByBurstLength{
 	bool operator()(const Process& lhs, const Process& rhs) const{
-		if(lhs.initialArrivalTime == rhs.initialArrivalTime){
+		if(lhs.totalCpuBurstTime == rhs.totalCpuBurstTime){
 			return lhs.processID > rhs.processID;
 		}
-		return lhs.initialArrivalTime > rhs.initialArrivalTime;
+		return lhs.totalCpuBurstTime > rhs.totalCpuBurstTime;
 	}
 };
 
