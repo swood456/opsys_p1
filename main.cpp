@@ -11,7 +11,7 @@ const int m = 1;		//number of processors available
 const int t_cs = 8;		//time it takes to complete a context switch
 const int t_slice = 84;	//time slice value
 
-void fcfs(std::vector<Process>);
+void fcfs(std::vector<Process>, int);
 std::string printQueue(std::queue<Process *> q) {
 	if(q.empty()) {
 		return "[Q empty]";
@@ -47,6 +47,8 @@ int main(int argc, char* argv[]){
 		return EXIT_FAILURE;
 	}
 
+	int numBursts = 0;
+
 	//go through the file line by line
 	while(std::getline(inFile, line)){
 		if(line[0] != '#'){
@@ -81,7 +83,7 @@ int main(int argc, char* argv[]){
 
 			//push the new object onto the vector
 			processes.push_back(Process(processID, processInfo[0], processInfo[1], processInfo[2], processInfo[3]));
-
+			numBursts += processInfo[2];
 		}
 	}
 
@@ -92,30 +94,11 @@ int main(int argc, char* argv[]){
 		processes[i].print();
 	}
 
-	fcfs(processes);
+	fcfs(processes, numBursts);
 
-	/*
+	// TODO Shortest Job First
 
-	//this is an even worse way to do things
-	std::priority_queue<Process, std::vector<Process>, FirstComeLessThan> fcfsPriorityQueue;
-
-	//for(int i = 0; i < processes)
-	for(unsigned int i = 0; i < processes.size(); i++){
-		//processes[i].print();
-		fcfsPriorityQueue.push(processes[i]);
-	}
-
-	std::cout << "now in fcfs order\n";
-	while(!fcfsPriorityQueue.empty()){
-		Process temp = fcfsPriorityQueue.top();
-		//fcfsPriorityQueue.top().print();
-		temp.print();
-		fcfsPriorityQueue.pop();
-	}*/
-
-	//do Shortest Job First
-
-	//do Round Robin
+	// TODO Round Robin
 
 
 	//std::cout << "hello world" << std::endl;
@@ -125,47 +108,35 @@ int main(int argc, char* argv[]){
 	return EXIT_SUCCESS;
 }
 
-void fcfs(std::vector<Process> fcfsAdding) {
+void fcfs(std::vector<Process> fcfsAdding, int numBursts) {
+
+	std::cout<<"time 0ms: Simulator started for FCFS [Q empty]"<<std::endl;
+
 	unsigned int numProcesses = fcfsAdding.size();
 	std::vector<Process *> cpu(m);	// stores all the running processes
 	std::vector<int> cpuCS(m);		// countdown timers for context switches for each core
+
+	double	avgWaitTime = 0;
+	double	avgTurnTime = 0;
+	int		numContextSwitches = 0;
 
 	//////////////////////////
 	//First-Come-First-Serve//
 	//////////////////////////
 
 	/*
-	1. see if things arrived at this ms
-		if yes add them the process queue at back
-	2. check to see if any processes have completed their I/O work
-		if yes readd them to the proces queue keeping track of states
-	3. check if current active process is finished
-		see if it the last burst, if not swap to IO
-		then do a context switch
+	1. remove finished processes from the cpu
+		- check if cpuCS does not equal zero
+			- check if process is finished
+				- check if process is done
+					- TRUE then remove process completely
+					- FALSE then place on IO list
+		- else decrement cpuCS
+	2. remove processes from IO list and place them on ready queue
+	3. add new processes to ready queue
+	4. remove processes from ready queue and place on cpu
 
 	*/
-	// std::vector<Process> fcfsAdding(processes);
-
-	//std::queue<Process> fcfsProcessQueue;
-/*
-	Process currRunningProcess;
-	bool currRunningProcessUsed = false;
-
-	int time = 0;
-
-	//instead of iterating through each ms, have a list of events that we just go to the first one?
-
-	while(!fcfsAdding.empty() || !fcfsProcessQueue.empty()){
-
-		//run the process
-		if(currRunningProcessUsed){
-			currRunningProcess.run(1);
-		}
-
-
-
-		time++;
-	}*/
 
 
 	//sort the vector by process ID?
@@ -174,22 +145,9 @@ void fcfs(std::vector<Process> fcfsAdding) {
 	std::vector<Process *>::iterator IOitr;
 	std::vector<Process *> IOtmp;
 
-	//This is not a smart way to do things
-
 	std::vector<Process>::iterator addingItr;
 	int time = 0;
 	while(numProcesses > 0){
-		//std::cout <<"hello\n";
-
-		/*if(!fcfsIOQueue.empty()){
-			if(fcfsIOQueue.front().runIO(1) == 1){
-				std::cout << "finished IO on process with ID " << fcfsIOQueue.front().processID << " and pop'd it at time: " << time << std::endl;
-				if(fcfsIOQueue.front().curNumBursts > 0){
-					fcfsQueue.push(fcfsIOQueue.front());
-				}
-				fcfsIOQueue.pop();
-			}
-		}*/
 
 		for (int i = 0; i < m; ++i) {
 			if (cpuCS[i] == 0) {
@@ -210,6 +168,7 @@ void fcfs(std::vector<Process> fcfsAdding) {
 
 						IOtmp.push_back(cpu[i]);
 					}
+					avgTurnTime += time - cpu[i]->burstArrivalTime;
 
 					cpu[i] = NULL;
 
@@ -219,59 +178,18 @@ void fcfs(std::vector<Process> fcfsAdding) {
 				cpuCS[i]--;
 
 				if(cpuCS[i] == 0 && cpu[i] != NULL){
-					// TODO print "starting process" message
 					std::cout<<"time "<<time<<"ms: Process "<<cpu[i]->processID<<" started using the CPU "
 						<<printQueue(fcfsQueue)<<std::endl;
 				}
 			}
 		}
 
-		// // updating the cores
-		// for (int i = 0; i < m; ++i) {
-		// 	// std::cout<<time<<" cpucs " << i << " is " << cpuCS[i]<<std::endl;
-		// 	if(cpuCS[i] == 0) {
-		// 		if (cpu[i] == NULL) {
-		// 			// the cpu core is currently idle
-		// 			// try to give it a process to work on
-		// 			if (!fcfsQueue.empty()) {
-		// 				// set context switch time to half the normal context switch time
-		// 				cpuCS[i] = t_cs/2;
-		//
-		// 				// give cpu core i a process from the front of the queue
-		// 				// pop that process from the front the queue
-		// 				cpu[i] = fcfsQueue.front();
-		// 				fcfsQueue.pop();
-		//
-		// 				//TODO add output for starting to run process
-		// 			}
-		// 		} else if (cpu[i]->run(1) == 1) {
-		//
-		//
-		// 			// process finished running
-		// 			// try to replace it with another process
-		// 			if (!fcfsQueue.empty()) {
-		// 				cpuCS[i] = t_cs;
-		// 				cpu[i] = fcfsQueue.front();
-		// 				fcfsQueue.pop();
-		// 			} else {
-		// 				cpuCS[i] = t_cs/2;
-		// 			}
-		// 		}
-		// 	} else {
-		// 		cpuCS[i]--;
-		//
-		// 		if(cpuCS[i] == 0 && cpu[i] != NULL){
-		// 			// TODO print "starting process" message
-		// 			std::cout<<"time "<<time<<"ms: Process "<<cpu[i]->processID<<" started using the CPU "
-		// 				<<printQueue(fcfsQueue)<<std::endl;
-		// 		}
-		// 	}
-		// }
-
 		IOitr = fcfsIOList.begin();
 		while(IOitr != fcfsIOList.end()){
 			//update IO for this process
 			if((*IOitr)->runIO(1) == 1){
+				(*IOitr)->burstArrivalTime = time;
+
 				//add the process back into the queue
 				fcfsQueue.push(*IOitr);
 
@@ -311,6 +229,10 @@ void fcfs(std::vector<Process> fcfsAdding) {
 		// add stuff to cpu
 		for (int i = 0; i < m; ++i) {
 			if (cpu[i] == NULL && !fcfsQueue.empty()) {
+				numContextSwitches++;
+				avgWaitTime += time - fcfsQueue.front()->burstArrivalTime;
+				//avgTurnTime += time + fcfsQueue.front()->totalCpuBurstTime - fcfsQueue.front()->burstArrivalTime;
+
 				cpu[i] = fcfsQueue.front();
 				fcfsQueue.pop();
 
@@ -318,28 +240,12 @@ void fcfs(std::vector<Process> fcfsAdding) {
 			}
 		}
 
-		// //run the first thing is the processing queue
-		// if(!fcfsQueue.empty()){
-		// 	if(fcfsQueue.front()->run(1) == 1){
-		// 		//process finished running
-		//
-		// 		if(fcfsQueue.front()->curNumBursts <= 0){
-		// 			//the process is done, stop running things
-		// 			std::cout << "finished process with ID " << fcfsQueue.front()->processID << std::endl;
-		// 		}else{
-		// 			std::cout << "finished running process with ID " << fcfsQueue.front()->processID
-		// 				<< " and pop'd it at time: " << time << "it has " << fcfsQueue.front()->curNumBursts << "remaining" << std::endl;
-		// 			fcfsIOList.push_back(fcfsQueue.front());
-		// 		}
-		// 		fcfsQueue.pop();
-		// 	}
-		// }
-
-
-
 		time++;
-		//std::cout<<"new time "<<time<<std::endl;
-		// if(time > 100)
-		//  	exit(EXIT_FAILURE);
 	}
+
+	std::cout<<"time "<<time+ t_cs/2 - 1<<"ms: Simulator ended for FCFS"<<std::endl<<std::endl;
+
+	std::cout<<"AVG WAIT = "<<avgWaitTime/numBursts<<std::endl;
+	std::cout<<"AVG TURN = "<<(avgTurnTime)/numBursts<<std::endl;
+	std::cout<<"CSWITCH = "<<numContextSwitches<<std::endl;
 }

@@ -21,7 +21,7 @@ public:
 	int curNumBursts;			// current number of cpu bursts remaining
 	int curIOTime;				// current IO time remaining
 	int curProcessTime;			// current CPU time remaining
-	bool running;				// false if process is not running, true if it is
+	int burstArrivalTime;		// time current burst arrives in ready queue
 
 public:
 	Process();

@@ -11,7 +11,7 @@ Process::Process() {
 	curIOTime = -1;
 	curProcessTime = -1;
 
-	running = false;
+	burstArrivalTime = initialArrivalTime;
 }
 
 Process::Process(std::string _processID, int _initialArrivalTime, int _totalCpuBurstTime, int _totalNumBursts, int _ioTime){
@@ -25,7 +25,7 @@ Process::Process(std::string _processID, int _initialArrivalTime, int _totalCpuB
 	curIOTime = ioTime;
 	curProcessTime = totalCpuBurstTime;
 
-	running = false;
+	burstArrivalTime = initialArrivalTime;
 }
 
 void Process::print(){
