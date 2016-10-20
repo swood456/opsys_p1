@@ -512,6 +512,7 @@ void roundRobin(std::vector<Process> rrAdding, int numBursts, double avgBurstTim
 
 							//preempt
 							++numPreemptions;
+							++numContextSwitches;
 							//push the current process to the back of the queue
 							fcfsQueue.push(cpu[i]);
 
@@ -597,7 +598,7 @@ void roundRobin(std::vector<Process> rrAdding, int numBursts, double avgBurstTim
 	}
 
 	//outputFile << "hello from fcfs\n";
-	outputFile << "Algorithm SJF\n-- average CPU burst time: " << avgBurstTime <<" ms\n-- average wait time: " <<
+	outputFile << "Algorithm RR\n-- average CPU burst time: " << avgBurstTime <<" ms\n-- average wait time: " <<
 		avgWaitTime/numBursts<<"ms\n"<< "-- average turnaround time: "<<avgTurnTime/numBursts<<
 		" ms\n-- total number of context switches: "<<numContextSwitches<<"\n-- total number of preemptions: " <<
 		numPreemptions << std::endl;
