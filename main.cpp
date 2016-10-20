@@ -600,7 +600,7 @@ void roundRobin(std::vector<Process> rrAdding, int numBursts, double avgBurstTim
 	outputFile << "Algorithm RR\n-- average CPU burst time: " << avgBurstTime <<" ms\n-- average wait time: " <<
 		avgWaitTime/numBursts<<" ms\n"<< "-- average turnaround time: "<<avgTurnTime/numBursts<<
 		" ms\n-- total number of context switches: "<<numContextSwitches<<"\n-- total number of preemptions: " <<
-		numPreemptions << std::endl;
+		numPreemptions;
 
 	std::cout<<"time "<<time+ t_cs/2 - 1<<"ms: Simulator ended for RR"<<std::endl<<std::endl;
 
