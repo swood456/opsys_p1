@@ -22,6 +22,7 @@ public:
 	int curIOTime;				// current IO time remaining
 	int curProcessTime;			// current CPU time remaining
 	int burstArrivalTime;		// time current burst arrives in ready queue
+	int waitTimeArrival;
 
 public:
 	Process();

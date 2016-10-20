@@ -508,8 +508,14 @@ void roundRobin(std::vector<Process> rrAdding, int numBursts, double avgBurstTim
 							//preempt
 							++numPreemptions;
 							++numContextSwitches;
+
+							cpu[i]->burstArrivalTime = time;
+
 							//push the current process to the back of the queue
 							fcfsQueue.push(cpu[i]);
+
+							avgWaitTime += time - fcfsQueue.front()->burstArrivalTime;
+							avgTurnTime += time - cpu[i]->burstArrivalTime;
 
 							std::cout << "time "<<time<<"ms: Time slice expired; process "<< cpu[i]->processID <<
 								" preempted with "<< cpu[i]->curProcessTime <<"ms to go " <<printQueue(fcfsQueue) << std::endl;
@@ -580,7 +586,6 @@ void roundRobin(std::vector<Process> rrAdding, int numBursts, double avgBurstTim
 			if (cpu[i] == NULL && !fcfsQueue.empty()) {
 				numContextSwitches++;
 				avgWaitTime += time - fcfsQueue.front()->burstArrivalTime;
-				//avgTurnTime += time + fcfsQueue.front()->totalCpuBurstTime - fcfsQueue.front()->burstArrivalTime;
 
 				cpu[i] = fcfsQueue.front();
 				fcfsQueue.pop();
