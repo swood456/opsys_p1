@@ -166,19 +166,20 @@ void fcfs(std::vector<Process> fcfsAdding, int numBursts, double avgBurstTime, s
 
 	*/
 
+	std::queue<Process *> fcfsQueue;			// the ready queue
+	std::vector<Process *> fcfsIOList;			// list of processes blocked by I/O
+	std::vector<Process *>::iterator IOitr;		// iterator for fcfsIOList
+	std::vector<Process *> IOtmp;				// temp IO list for newly blocked processes
+	std::vector<Process>::iterator addingItr;	// iterator for the fcfsAdding vector
 
-	//sort the vector by process ID?
-	std::queue<Process *> fcfsQueue;
-	std::vector<Process *> fcfsIOList;
-	std::vector<Process *>::iterator IOitr;
-	std::vector<Process *> IOtmp;
-
-	std::vector<Process>::iterator addingItr;
+	// remove any finished processes from the CPU
 	int time = 0;
 	while(numProcesses > 0){
-
+		// iterate through all the cores
 		for (int i = 0; i < m; ++i) {
+			// if the core is not undergoing a context switch
 			if (cpuCS[i] == 0) {
+				// if there is a process in the core, run it 1 tick and see if it's done
 				if (cpu[i] != NULL && cpu[i]->run(1) == 1) {
 					// either put this process in the io queue if it's not finished
 					// or remove it completely
@@ -194,8 +195,11 @@ void fcfs(std::vector<Process> fcfsAdding, int numBursts, double avgBurstTime, s
 						std::cout<<"time "<<time<<"ms: Process "<<cpu[i]->processID<<" blocked on I/O until time "
 							<<time+cpu[i]->ioTime<<"ms "<<printQueue(fcfsQueue)<<std::endl;
 
+						// add to list of blocked I/O processes
 						IOtmp.push_back(cpu[i]);
 					}
+
+					// increment the average turnaround time
 					avgTurnTime += time - cpu[i]->burstArrivalTime;
 
 					cpu[i] = NULL;
@@ -203,6 +207,7 @@ void fcfs(std::vector<Process> fcfsAdding, int numBursts, double avgBurstTime, s
 					cpuCS[i] = t_cs/2;
 				}
 			} else {
+				// we are undergoing a context switch, so decrement the context switch timer
 				cpuCS[i]--;
 
 				if(cpuCS[i] == 0 && cpu[i] != NULL){
@@ -212,9 +217,11 @@ void fcfs(std::vector<Process> fcfsAdding, int numBursts, double avgBurstTime, s
 			}
 		}
 
+		// iterate through all the I/O blocked processes
 		IOitr = fcfsIOList.begin();
 		while(IOitr != fcfsIOList.end()){
-			//update IO for this process
+			// update IO for this process
+			// if it's done running I/O, put it back on the ready queue
 			if((*IOitr)->runIO(1) == 1){
 				(*IOitr)->burstArrivalTime = time;
 
@@ -233,6 +240,7 @@ void fcfs(std::vector<Process> fcfsAdding, int numBursts, double avgBurstTime, s
 			}
 		}
 
+		// add newly blocked processes to the I/O list
 		fcfsIOList.insert(fcfsIOList.end(), IOtmp.begin(), IOtmp.end());
 		IOtmp.clear();
 
@@ -245,21 +253,19 @@ void fcfs(std::vector<Process> fcfsAdding, int numBursts, double avgBurstTime, s
 
 				std::cout<<"time "<<time<<"ms: Process "<<addingItr->processID
 					<<" arrived "<<printQueue(fcfsQueue)<<std::endl;
-
-				//fcfsAdding.erase(addingItr);
-				addingItr++;
-
-			} else{
-				addingItr++;
 			}
+
+			addingItr++;
 		}
 
-		// add stuff to cpu
+		// iterate through all the cores and try to give them a process if they are idle
 		for (int i = 0; i < m; ++i) {
 			if (cpu[i] == NULL && !fcfsQueue.empty()) {
+				// increment number of context switches
 				numContextSwitches++;
+
+				// increment average wait time
 				avgWaitTime += time - fcfsQueue.front()->burstArrivalTime;
-				//avgTurnTime += time + fcfsQueue.front()->totalCpuBurstTime - fcfsQueue.front()->burstArrivalTime;
 
 				cpu[i] = fcfsQueue.front();
 				fcfsQueue.pop();
@@ -271,7 +277,7 @@ void fcfs(std::vector<Process> fcfsAdding, int numBursts, double avgBurstTime, s
 		time++;
 	}
 
-	//outputFile << "hello from fcfs\n";
+	// output statistics to the output file
 	outputFile << "Algorithm FCFS\n-- average CPU burst time: " << avgBurstTime <<" ms\n-- average wait time: " <<
 		avgWaitTime/numBursts<<" ms\n"<< "-- average turnaround time: "<<avgTurnTime/numBursts<<
 		" ms\n-- total number of context switches: "<<numContextSwitches<<"\n-- total number of preemptions: 0\n";
@@ -313,7 +319,6 @@ void sjf(std::vector<Process> sjfAdding, int numBursts, double avgBurstTime, std
 
 
 	std::queue<Process *> fcfsQueue;
-	//std::priority_queue<Process *, std::vector<Process *>, LessThanByBurstLength> sjfQueue;
 	std::priority_queue<Process*, std::vector<Process*>, ShortestJobFirstLessThan> sjfQueue;
 	std::vector<Process *> sjfIOList;
 	std::vector<Process *>::iterator IOitr;
@@ -392,7 +397,6 @@ void sjf(std::vector<Process> sjfAdding, int numBursts, double avgBurstTime, std
 				std::cout<<"time "<<time<<"ms: Process "<<addingItr->processID
 					<<" arrived "<<printQueue(sjfQueue)<<std::endl;
 
-				//sjfAdding.erase(addingItr);
 				addingItr++;
 
 			} else{
@@ -417,7 +421,6 @@ void sjf(std::vector<Process> sjfAdding, int numBursts, double avgBurstTime, std
 		time++;
 	}
 
-	//outputFile << "hello from fcfs\n";
 	outputFile << "Algorithm SJF\n-- average CPU burst time: " << avgBurstTime <<" ms\n-- average wait time: " <<
 		avgWaitTime/numBursts<<" ms\n"<< "-- average turnaround time: "<<avgTurnTime/numBursts<<
 		" ms\n-- total number of context switches: "<<numContextSwitches<<"\n-- total number of preemptions: 0\n";
@@ -459,8 +462,6 @@ void roundRobin(std::vector<Process> rrAdding, int numBursts, double avgBurstTim
 
 
 	std::queue<Process *> fcfsQueue;
-	//std::priority_queue<Process *, std::vector<Process *>, LessThanByBurstLength> sjfQueue;
-	//std::priority_queue<Process, std::vector<Process>, LessThanByBurstLength> sjfQueue;
 	std::vector<Process *> sjfIOList;
 	std::vector<Process *>::iterator IOitr;
 	std::vector<Process *> IOtmp;
