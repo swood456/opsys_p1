@@ -12,10 +12,15 @@ const int m = 1;		//number of processors available
 const int t_cs = 8;		//time it takes to complete a context switch
 const int t_slice = 84;	//time slice value
 
+///////////////////////
+//Function prototypes//
+///////////////////////
+
 void fcfs(std::vector<Process>, int, double, std::ofstream&);
 void sjf(std::vector<Process>, int, double, std::ofstream&);
 void roundRobin(std::vector<Process>, int, double, std::ofstream&);
 
+//Function to print the contents of the wait queue
 std::string printQueue(std::queue<Process *> q) {
 	if(q.empty()) {
 		return "[Q empty]";
@@ -29,6 +34,7 @@ std::string printQueue(std::queue<Process *> q) {
 	return output + "]";
 }
 
+//Function to print the contents of the priority queue
 std::string printQueue(std::priority_queue<Process *, std::vector<Process *>, ShortestJobFirstLessThan> q){
 	if(q.empty()) {
 		return "[Q empty]";
@@ -42,6 +48,9 @@ std::string printQueue(std::priority_queue<Process *, std::vector<Process *>, Sh
 	return output + "]";
 }
 
+/////////////////
+//Main function//
+/////////////////
 int main(int argc, char* argv[]){
 
 	//check arguments
@@ -54,6 +63,7 @@ int main(int argc, char* argv[]){
 	std::ifstream inFile;
 	inFile.open(argv[1]);
 
+	//make variables to store input
 	std::string line;
 	std::vector<Process> processes;
 
@@ -64,6 +74,7 @@ int main(int argc, char* argv[]){
 		return EXIT_FAILURE;
 	}
 
+	//count the total number of bursts and the average time of each burst
 	int numBursts = 0;
 	double avgBurstTime = 0;
 
@@ -71,70 +82,84 @@ int main(int argc, char* argv[]){
 	while(std::getline(inFile, line)){
 		if(line[0] != '#'){
 
-//			std::cout << "debug: got line " << line << std::endl;
-
-			//parse the input line correctly
+			//break the input line down to be just the things we care about
 			std::string processID;
 			int processInfo [4];
 
+			//Look for | to break the input string down
 			std::string delimiter = "|";
 
 			size_t pos = 0;
 			std::string token;
 
+			//find the first | in the string, save its location
 			pos = line.find(delimiter);
+
+			//find the substring from the start of the string to where the first | is
 			processID = line.substr(0, pos);
+
+			//remove everything up to and including the first |
 			line.erase(0, pos + delimiter.length());
 
+			//loop through and find the 4 remaining int values
 			for(int i = 0; i < 4; i++){
 
-
+				//again, find the first |
 				pos = line.find(delimiter);
 
+				//make that section into a string
 				token = line.substr(0, pos);
 
+				//convert the string into an int using atoi
 				processInfo[i] = atoi(token.c_str());
 
+				//remove the substring
 			    line.erase(0, pos + delimiter.length());
 
 			}
 
-			//push the new object onto the vector
+			//push the new Process object onto the vector of processes
 			processes.push_back(Process(processID, processInfo[0], processInfo[1], processInfo[2], processInfo[3]));
+			
+			//keep track of the number of bursts and the burst time for the process
 			numBursts += processInfo[2];
 			avgBurstTime += processInfo[1] * processInfo[2];
 		}
 	}
 
+	//calculate the average burst time
 	avgBurstTime =  (double)avgBurstTime / (double)numBursts;
 
+	//close the input file
 	inFile.close();
-
-	/*for(unsigned int i = 0; i < processes.size(); i++){
-		processes[i].print();
-	}*/
 
 	//open the ouput file
 	std::ofstream outputFile;
 	outputFile.open(argv[2]);
 
+	//set up the output file to output decimal numbers with only 2 decimal places (rounded)
 	outputFile << std::fixed << std::setprecision(2);
 
+	//run First Come First Serve
 	fcfs(processes, numBursts, avgBurstTime, outputFile);
 
-	// TODO Shortest Job First
+	// run Shortest Job First
 	sjf(processes, numBursts, avgBurstTime, outputFile);
 
-	// TODO Round Robin
+	// run Round Robin
 	roundRobin(processes, numBursts, avgBurstTime, outputFile);
 
+	//close the output file
 	outputFile.close();
-	//std::cout << "hello world" << std::endl;
 
-
-
+	//exit
 	return EXIT_SUCCESS;
 }
+
+//////////////////////////
+//First-Come-First-Serve//
+//////////////////////////
+
 
 void fcfs(std::vector<Process> fcfsAdding, int numBursts, double avgBurstTime, std::ofstream& outputFile) {
 
@@ -148,9 +173,6 @@ void fcfs(std::vector<Process> fcfsAdding, int numBursts, double avgBurstTime, s
 	double	avgTurnTime = 0;
 	int		numContextSwitches = 0;
 
-	//////////////////////////
-	//First-Come-First-Serve//
-	//////////////////////////
 
 	/*
 	1. remove finished processes from the cpu
@@ -281,76 +303,93 @@ void fcfs(std::vector<Process> fcfsAdding, int numBursts, double avgBurstTime, s
 }
 
 
-void sjf(std::vector<Process> sjfAdding, int numBursts, double avgBurstTime, std::ofstream& outputFile) {
-
-	std::cout<<"time 0ms: Simulator started for SJF [Q empty]"<<std::endl;
-
-	unsigned int numProcesses = sjfAdding.size();
-	std::vector<Process *> cpu(m);	// stores all the running processes
-	std::vector<int> cpuCS(m);		// countdown timers for context switches for each core
-
-	double	avgWaitTime = 0;
-	double	avgTurnTime = 0;
-	int		numContextSwitches = 0;
-
 	/////////////////////
 	//Shorest-Job-First//
 	/////////////////////
 
-	/*
-	1. remove finished processes from the cpu
-		- check if cpuCS does not equal zero
-			- check if process is finished
-				- check if process is done
-					- TRUE then remove process completely
-					- FALSE then place on IO list
-		- else decrement cpuCS
-	2. remove processes from IO list and place them on ready queue
-	3. add new processes to ready queue
-	4. remove processes from ready queue and place on cpu
+void sjf(std::vector<Process> sjfAdding, int numBursts, double avgBurstTime, std::ofstream& outputFile) {
 
-	*/
+	std::cout<<"time 0ms: Simulator started for SJF [Q empty]"<<std::endl;
+
+	//count of the number of processes still running. We stop when this is 0
+	unsigned int numProcesses = sjfAdding.size();
+
+	std::vector<Process *> cpu(m);	// stores all the running processes
+	std::vector<int> cpuCS(m);		// countdown timers for context switches for each core
+
+	//variables to hold onto the statistics
+	double	avgWaitTime = 0;
+	double	avgTurnTime = 0;
+	int		numContextSwitches = 0;
 
 
-	std::queue<Process *> fcfsQueue;
-	//std::priority_queue<Process *, std::vector<Process *>, LessThanByBurstLength> sjfQueue;
+	//wait queue, uses a priority queue that sorts by process burst time
 	std::priority_queue<Process*, std::vector<Process*>, ShortestJobFirstLessThan> sjfQueue;
+	
+	//vector of Processes that are currently blocked on I/O
 	std::vector<Process *> sjfIOList;
+
+	//Iterator to go through the list of IO variables
 	std::vector<Process *>::iterator IOitr;
+
+	//Vecotr that is used to make sure that Processes do not have I/O run on them the same tick they finish on the CPU
 	std::vector<Process *> IOtmp;
 
+	//Iterator to go through all the processes that still need to be added
 	std::vector<Process>::iterator addingItr;
+
+	//int value to keep track of what ms we are on now
 	int time = 0;
+
+	//loop until all processes are finished running
 	while(numProcesses > 0){
 
+		//go through every CPU core
 		for (int i = 0; i < m; ++i) {
+			//if the current core is not waiting on a context switch
 			if (cpuCS[i] == 0) {
+
+				//if the current CPU is not pointing to NULL (there is some process running on it)
+				//	run the Process for 1 ms and check to see if it finishes
 				if (cpu[i] != NULL && cpu[i]->run(1) == 1) {
-					// either put this process in the io queue if it's not finished
-					// or remove it completely
+					//the process has completed its burst, then see if it is actualy done or has some I/O to do
 					if (cpu[i]->curNumBursts <= 0) {
+						//the Process is completely done, print out that it is done
 						std::cout<<"time "<<time<<"ms: Process "<<cpu[i]->processID<<" terminated "
 							<<printQueue(sjfQueue)<<std::endl;
 
+						//decrement the number of running processes
 						numProcesses--;
 					} else {
+						//the process still has more things to do, put it into I/O
 						std::cout<<"time "<<time<<"ms: Process "<<cpu[i]->processID<<" completed a CPU burst; "
 							<<cpu[i]->curNumBursts<<" to go "<<printQueue(sjfQueue)<<std::endl;
 
 						std::cout<<"time "<<time<<"ms: Process "<<cpu[i]->processID<<" blocked on I/O until time "
 							<<time+cpu[i]->ioTime<<"ms "<<printQueue(sjfQueue)<<std::endl;
 
+						//put the Process into a temp I/O queue so that it does not run I/O this tick
 						IOtmp.push_back(cpu[i]);
 					}
+
+					//regardless of if the process is completely done or has I/O, do these things
+
+					//increment the average tunraround time
 					avgTurnTime += time - cpu[i]->burstArrivalTime;
 
+					//free up this cpu core
 					cpu[i] = NULL;
 
+					//se up a half context switch
 					cpuCS[i] = t_cs/2;
 				}
 			} else {
+				//We are currently doing a context switch
+
+				//decrement the context switch counter
 				cpuCS[i]--;
 
+				//if we just reach 0, that means that a process can start doing work on the CPU
 				if(cpuCS[i] == 0 && cpu[i] != NULL){
 					std::cout<<"time "<<time<<"ms: Process "<<cpu[i]->processID<<" started using the CPU "
 						<<printQueue(sjfQueue)<<std::endl;
@@ -358,54 +397,65 @@ void sjf(std::vector<Process> sjfAdding, int numBursts, double avgBurstTime, std
 			}
 		}
 
+
+		//iterate through the vector of objects in I/O
 		IOitr = sjfIOList.begin();
 		while(IOitr != sjfIOList.end()){
-			//update IO for this process
+			
+			//run I/O on this process for 1 ms. See if it finished I/O
 			if((*IOitr)->runIO(1) == 1){
+				//the Process is done with I/O
+
+				//set the time it enters into the ready queue to now
 				(*IOitr)->burstArrivalTime = time;
 
-				//add the process back into the queue
+				//add the process back into the ready queue
 				sjfQueue.push(*IOitr);
 
+				//print that the object has finished I/O
 				std::cout<<"time "<<time<<"ms: Process "<< (*IOitr)->processID
 					<<" completed I/O "<<printQueue(sjfQueue)<<std::endl;
 
-				//remove the process from the IO list
+				//remove the process from the I/O list
 				sjfIOList.erase(IOitr);
 
 			}
 			else{
+				//Process is not done with I/O, so look at next object
 				IOitr++;
 			}
 		}
 
+		//add all the objects that just finished CPU time this tick into the real I/O list
 		sjfIOList.insert(sjfIOList.end(), IOtmp.begin(), IOtmp.end());
+
+		//clear the holding list
 		IOtmp.clear();
 
-		//look to see if any processes arrive
+		//look to see if any processes arrived at this time
 		addingItr = sjfAdding.begin();
 		while(addingItr != sjfAdding.end()){
 
+			//if a process arrives at the current time
 			if(addingItr->initialArrivalTime == time){
+
+				//push the object into the ready queue
 				sjfQueue.push(&(*addingItr));
 
+				//annoucnce that it arrives
 				std::cout<<"time "<<time<<"ms: Process "<<addingItr->processID
 					<<" arrived "<<printQueue(sjfQueue)<<std::endl;
 
-				//sjfAdding.erase(addingItr);
-				addingItr++;
-
-			} else{
-				addingItr++;
 			}
+			addingItr++;
+			
 		}
 
-		// add stuff to cpu
+		// Add objects to CPU if the CPU is ready for them
 		for (int i = 0; i < m; ++i) {
 			if (cpu[i] == NULL && !sjfQueue.empty()) {
 				numContextSwitches++;
 				avgWaitTime += time - sjfQueue.top()->burstArrivalTime;
-				//avgTurnTime += time + sjfQueue.front()->totalCpuBurstTime - sjfQueue.front()->burstArrivalTime;
 
 				cpu[i] = sjfQueue.top();
 				sjfQueue.pop();
@@ -417,7 +467,6 @@ void sjf(std::vector<Process> sjfAdding, int numBursts, double avgBurstTime, std
 		time++;
 	}
 
-	//outputFile << "hello from fcfs\n";
 	outputFile << "Algorithm SJF\n-- average CPU burst time: " << avgBurstTime <<" ms\n-- average wait time: " <<
 		avgWaitTime/numBursts<<" ms\n"<< "-- average turnaround time: "<<avgTurnTime/numBursts<<
 		" ms\n-- total number of context switches: "<<numContextSwitches<<"\n-- total number of preemptions: 0\n";
