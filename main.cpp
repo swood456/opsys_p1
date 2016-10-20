@@ -273,15 +273,11 @@ void fcfs(std::vector<Process> fcfsAdding, int numBursts, double avgBurstTime, s
 
 	//outputFile << "hello from fcfs\n";
 	outputFile << "Algorithm FCFS\n-- average CPU burst time: " << avgBurstTime <<" ms\n-- average wait time: " <<
-		avgWaitTime/numBursts<<"ms\n"<< "-- average turnaround time: "<<avgTurnTime/numBursts<<
+		avgWaitTime/numBursts<<" ms\n"<< "-- average turnaround time: "<<avgTurnTime/numBursts<<
 		" ms\n-- total number of context switches: "<<numContextSwitches<<"\n-- total number of preemptions: 0\n";
 
 	std::cout<<"time "<<time+ t_cs/2 - 1<<"ms: Simulator ended for FCFS"<<std::endl<<std::endl;
 
-	std::cout<<"AVG BURST= "<<avgBurstTime<<std::endl;
-	std::cout<<"AVG WAIT = "<<avgWaitTime/numBursts<<std::endl;
-	std::cout<<"AVG TURN = "<<avgTurnTime/numBursts<<std::endl;
-	std::cout<<"CSWITCH  = "<<numContextSwitches<<std::endl;
 }
 
 
@@ -423,15 +419,11 @@ void sjf(std::vector<Process> sjfAdding, int numBursts, double avgBurstTime, std
 
 	//outputFile << "hello from fcfs\n";
 	outputFile << "Algorithm SJF\n-- average CPU burst time: " << avgBurstTime <<" ms\n-- average wait time: " <<
-		avgWaitTime/numBursts<<"ms\n"<< "-- average turnaround time: "<<avgTurnTime/numBursts<<
+		avgWaitTime/numBursts<<" ms\n"<< "-- average turnaround time: "<<avgTurnTime/numBursts<<
 		" ms\n-- total number of context switches: "<<numContextSwitches<<"\n-- total number of preemptions: 0\n";
 
 	std::cout<<"time "<<time+ t_cs/2 - 1<<"ms: Simulator ended for SJF"<<std::endl<<std::endl;
 
-	std::cout<<"AVG BURST= "<<avgBurstTime<<std::endl;
-	std::cout<<"AVG WAIT = "<<avgWaitTime/numBursts<<std::endl;
-	std::cout<<"AVG TURN = "<<avgTurnTime/numBursts<<std::endl;
-	std::cout<<"CSWITCH  = "<<numContextSwitches<<std::endl;
 }
 
 void roundRobin(std::vector<Process> rrAdding, int numBursts, double avgBurstTime, std::ofstream& outputFile) {
@@ -602,14 +594,10 @@ void roundRobin(std::vector<Process> rrAdding, int numBursts, double avgBurstTim
 
 	//outputFile << "hello from fcfs\n";
 	outputFile << "Algorithm RR\n-- average CPU burst time: " << avgBurstTime <<" ms\n-- average wait time: " <<
-		avgWaitTime/numBursts<<"ms\n"<< "-- average turnaround time: "<<avgTurnTime/numBursts<<
+		avgWaitTime/numBursts<<" ms\n"<< "-- average turnaround time: "<<avgTurnTime/numBursts<<
 		" ms\n-- total number of context switches: "<<numContextSwitches<<"\n-- total number of preemptions: " <<
 		numPreemptions << std::endl;
 
 	std::cout<<"time "<<time+ t_cs/2 - 1<<"ms: Simulator ended for RR"<<std::endl<<std::endl;
 
-	std::cout<<"AVG BURST= "<<avgBurstTime<<std::endl;
-	std::cout<<"AVG WAIT = "<<avgWaitTime/numBursts<<std::endl;
-	std::cout<<"AVG TURN = "<<avgTurnTime/numBursts<<std::endl;
-	std::cout<<"CSWITCH  = "<<numContextSwitches<<std::endl;
 }
