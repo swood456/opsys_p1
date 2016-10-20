@@ -42,7 +42,7 @@ public:
 
 struct ShortestJobFirstLessThan {
 	bool operator()(const Process* p1, const Process* p2) const {
-		return p1->totalCpuBurstTime > p2->totalCpuBurstTime || (p1->totalCpuBurstTime == p2->totalCpuBurstTime && p1->processID < p2->processID);
+		return p1->totalCpuBurstTime > p2->totalCpuBurstTime || (p1->totalCpuBurstTime == p2->totalCpuBurstTime && p1->processID > p2->processID);
 	}
 };
 

@@ -120,7 +120,7 @@ int main(int argc, char* argv[]){
 
 			//push the new Process object onto the vector of processes
 			processes.push_back(Process(processID, processInfo[0], processInfo[1], processInfo[2], processInfo[3]));
-			
+
 			//keep track of the number of bursts and the burst time for the process
 			numBursts += processInfo[2];
 			avgBurstTime += processInfo[1] * processInfo[2];
@@ -331,7 +331,7 @@ void sjf(std::vector<Process> sjfAdding, int numBursts, double avgBurstTime, std
 
 	//ready queue, uses a priority queue that sorts by process burst time
 	std::priority_queue<Process*, std::vector<Process*>, ShortestJobFirstLessThan> sjfQueue;
-	
+
 	//vector of Processes that are currently blocked on I/O
 	std::vector<Process *> sjfIOList;
 
@@ -407,7 +407,7 @@ void sjf(std::vector<Process> sjfAdding, int numBursts, double avgBurstTime, std
 		//iterate through the vector of objects in I/O
 		IOitr = sjfIOList.begin();
 		while(IOitr != sjfIOList.end()){
-			
+
 			//run I/O on this process for 1 ms. See if it finished I/O
 			if((*IOitr)->runIO(1) == 1){
 				//the Process is done with I/O
@@ -453,7 +453,7 @@ void sjf(std::vector<Process> sjfAdding, int numBursts, double avgBurstTime, std
 					<<" arrived "<<printQueue(sjfQueue)<<std::endl;
 			}
 			addingItr++;
-			
+
 		}
 
 		// Add objects to CPU if the CPU is ready for them
@@ -516,7 +516,6 @@ void roundRobin(std::vector<Process> rrAdding, int numBursts, double avgBurstTim
 	std::vector<Process *> sjfIOList;
 	std::vector<Process *>::iterator IOitr;
 	std::vector<Process *> IOtmp;
-	//int rrTimer = t_slice;
 	std::vector<int> rrTimers(m);
 	for(int i = 0; i < m; i++){
 		rrTimers[i] = t_slice;
@@ -628,7 +627,6 @@ void roundRobin(std::vector<Process> rrAdding, int numBursts, double avgBurstTim
 				std::cout<<"time "<<time<<"ms: Process "<<addingItr->processID
 					<<" arrived "<<printQueue(fcfsQueue)<<std::endl;
 
-				//rrAdding.erase(addingItr);
 				addingItr++;
 
 			} else{
@@ -652,7 +650,6 @@ void roundRobin(std::vector<Process> rrAdding, int numBursts, double avgBurstTim
 		time++;
 	}
 
-	//outputFile << "hello from fcfs\n";
 	outputFile << "Algorithm RR\n-- average CPU burst time: " << avgBurstTime <<" ms\n-- average wait time: " <<
 		avgWaitTime/numBursts<<" ms\n"<< "-- average turnaround time: "<<avgTurnTime/numBursts<<
 		" ms\n-- total number of context switches: "<<numContextSwitches<<"\n-- total number of preemptions: " <<
