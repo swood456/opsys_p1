@@ -71,7 +71,7 @@ int main(int argc, char* argv[]){
 	while(std::getline(inFile, line)){
 		if(line[0] != '#'){
 
-			std::cout << "debug: got line " << line << std::endl;
+//			std::cout << "debug: got line " << line << std::endl;
 
 			//parse the input line correctly
 			std::string processID;
@@ -464,7 +464,11 @@ void roundRobin(std::vector<Process> rrAdding, int numBursts, double avgBurstTim
 	std::vector<Process *> sjfIOList;
 	std::vector<Process *>::iterator IOitr;
 	std::vector<Process *> IOtmp;
-	int rrTimer = t_slice;
+	//int rrTimer = t_slice;
+	std::vector<int> rrTimers(m);
+	for(int i = 0; i < m; i++){
+		rrTimers[i] = t_slice;
+	}
 
 	std::vector<Process>::iterator addingItr;
 	int time = 0;
@@ -473,7 +477,7 @@ void roundRobin(std::vector<Process> rrAdding, int numBursts, double avgBurstTim
 		for (int i = 0; i < m; ++i) {
 			if (cpuCS[i] == 0) {
 				if (cpu[i] != NULL){
-					--rrTimer;
+					rrTimers[i]--;
 					if(cpu[i]->run(1) == 1) {
 						// either put this process in the io queue if it's not finished
 						// or remove it completely
@@ -496,13 +500,13 @@ void roundRobin(std::vector<Process> rrAdding, int numBursts, double avgBurstTim
 						cpu[i] = NULL;
 
 						cpuCS[i] = t_cs/2;
-						rrTimer = t_slice;
-					} else if(rrTimer == 0){
+						rrTimers[i] = t_slice;
+					} else if(rrTimers[i] == 0){
 						//time slice is over, preempt if the queue is not empty
 						if(fcfsQueue.empty()){
 							//do not preempt, just reset timer and say something
 							std::cout << "time "<<time<<"ms: Time slice expired; no preemption because ready queue is empty [Q empty]" << std::endl;
-							rrTimer = t_slice;
+							rrTimers[i] = t_slice;
 						} else{
 
 							//preempt
@@ -519,7 +523,7 @@ void roundRobin(std::vector<Process> rrAdding, int numBursts, double avgBurstTim
 							cpuCS[i] = t_cs;
 
 							//reset timeslice
-							rrTimer = t_slice;
+							rrTimers[i] = t_slice;
 						}
 					}
 				}
