@@ -5,85 +5,11 @@
 #include <string>
 #include <vector>
 #include <queue>
+#include "Process.h"
 
 const int m = 1;		//number of processors available
 const int t_cs = 8;		//time it takes to complete a context switch
 const int t_slice = 84;	//time slice value
-
-
-class Process{
-//these should be made private eventually, but they never will be
-public:
-	std::string processID;
-	int initialArrivalTime;
-	int totalCpuBurstTime;
-	int totalNumBursts;
-	int ioTime;
-
-	int curNumBursts;
-	int curIOTime;
-	int curProcessTime;
-
-public:
-	Process(){
-		processID = "";
-		initialArrivalTime = -1;
-		totalCpuBurstTime = -1;
-		totalNumBursts = -1;
-		ioTime = -1;
-
-		curNumBursts = -1;
-		curIOTime = -1;
-		curProcessTime = -1;
-	}
-
-	Process(std::string _processID, int _initialArrivalTime, int _totalCpuBurstTime, int _totalNumBursts, int _ioTime){
-		processID = _processID;
-		initialArrivalTime = _initialArrivalTime;
-		totalCpuBurstTime = _totalCpuBurstTime;
-		totalNumBursts = _totalNumBursts;
-		ioTime = _ioTime;
-
-		curNumBursts = totalNumBursts;
-		curIOTime = ioTime;
-		curProcessTime = totalCpuBurstTime;
-	}
-
-	void print(){
-		std::cout << processID << " " << initialArrivalTime << " " << totalCpuBurstTime << " " << totalNumBursts << " " << ioTime << std::endl;
-	}
-
-	int run(int duration){
-		curProcessTime -= duration;
-
-		if(curProcessTime <= 0){
-			curNumBursts--;
-			curProcessTime = totalCpuBurstTime;
-			return 1;
-		}
-		return 0;
-	}
-
-	int runIO(int duration){
-		curIOTime -= duration;
-
-		if(curIOTime <= 0){
-			curIOTime = ioTime;
-			return 1;
-		}
-		return 0;
-	}
-};
-
-struct FirstComeLessThan{
-	bool operator()(const Process& lhs, const Process& rhs) const{
-		if(lhs.initialArrivalTime == rhs.initialArrivalTime){
-			return lhs.processID > rhs.processID;
-		}
-		return lhs.initialArrivalTime > rhs.initialArrivalTime;
-	}
-};
-
 
 int main(int argc, char* argv[]){
 
@@ -110,7 +36,7 @@ int main(int argc, char* argv[]){
 	//go through the file line by line
 	while(std::getline(inFile, line)){
 		if(line[0] != '#'){
-			
+
 			std::cout << "debug: got line " << line << std::endl;
 
 			//parse the input line correctly
@@ -132,7 +58,7 @@ int main(int argc, char* argv[]){
 				pos = line.find(delimiter);
 
 				token = line.substr(0, pos);
-    			
+
 				processInfo[i] = atoi(token.c_str());
 
 			    line.erase(0, pos + delimiter.length());
@@ -178,7 +104,7 @@ int main(int argc, char* argv[]){
 	//instead of iterating through each ms, have a list of events that we just go to the first one?
 
 	while(!fcfsAdding.empty() || !fcfsProcessQueue.empty()){
-		
+
 		//run the process
 		if(currRunningProcessUsed){
 			currRunningProcess.run(1);
@@ -189,7 +115,7 @@ int main(int argc, char* argv[]){
 		time++;
 	}*/
 
-	
+
 	//sort the vector by process ID?
 	std::queue<Process> fcfsQueue;
 	std::vector<Process> fcfsIOList;
@@ -247,25 +173,25 @@ int main(int argc, char* argv[]){
 		while(addingItr != fcfsAdding.end()){
 
 			if(addingItr->initialArrivalTime == time){
-			
+
 				fcfsQueue.push(*addingItr);
 				fcfsAdding.erase(addingItr);
 
 				std::cout << "added a thing\n";
-			
+
 			} else{
 				addingItr++;
 			}
 		}
 
-		
+
 
 		time++;
 
 		if(time > 99999)
 			return EXIT_FAILURE;
 	}
-	
+
 	/*
 
 	//this is an even worse way to do things
@@ -289,11 +215,10 @@ int main(int argc, char* argv[]){
 
 	//do Round Robin
 
-	
+
 	//std::cout << "hello world" << std::endl;
 
 
 
 	return EXIT_SUCCESS;
 }
-
