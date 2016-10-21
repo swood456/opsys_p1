@@ -497,26 +497,11 @@ void roundRobin(std::vector<Process> rrAdding, int numBursts, double avgBurstTim
 	//Round-Robin//
 	///////////////
 
-	/*
-	1. remove finished processes from the cpu
-		- check if cpuCS does not equal zero
-			- check if process is finished
-				- check if process is done
-					- TRUE then remove process completely
-					- FALSE then place on IO list
-		- else decrement cpuCS
-	2. remove processes from IO list and place them on ready queue
-	3. add new processes to ready queue
-	4. remove processes from ready queue and place on cpu
-
-	*/
-
-
+	
 	std::queue<Process *> fcfsQueue;
 	std::vector<Process *> sjfIOList;
 	std::vector<Process *>::iterator IOitr;
 	std::vector<Process *> IOtmp;
-	//int rrTimer = t_slice;
 	std::vector<int> rrTimers(m);
 	for(int i = 0; i < m; i++){
 		rrTimers[i] = t_slice;
